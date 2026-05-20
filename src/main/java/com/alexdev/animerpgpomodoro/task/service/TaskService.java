@@ -1,5 +1,6 @@
 package com.alexdev.animerpgpomodoro.task.service;
-
+import com.alexdev.animerpgpomodoro.auth.entity.User;
+import com.alexdev.animerpgpomodoro.auth.repository.UserRepository;
 import com.alexdev.animerpgpomodoro.category.entity.Category;
 import com.alexdev.animerpgpomodoro.category.repository.CategoryRepository;
 import com.alexdev.animerpgpomodoro.common.exception.ResourceNotFoundException;
@@ -9,26 +10,42 @@ import com.alexdev.animerpgpomodoro.task.entity.Task;
 import com.alexdev.animerpgpomodoro.task.entity.TaskPriority;
 import com.alexdev.animerpgpomodoro.task.mapper.TaskMapper;
 import com.alexdev.animerpgpomodoro.task.repository.TaskRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.List;
-
 @Service
 public class TaskService {
-
     private final TaskRepository taskRepository;
     private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
 
     public TaskService(
             TaskRepository taskRepository,
-            CategoryRepository categoryRepository
+            CategoryRepository categoryRepository,
+            UserRepository userRepository
     ) {
         this.taskRepository = taskRepository;
         this.categoryRepository = categoryRepository;
+        this.userRepository = userRepository;
+    }
+
+    private User getAuthenticatedUser() {
+
+        String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User not found"
+                ));
     }
 
     public TaskResponse createTask(TaskRequest request) {
+
+        User user = getAuthenticatedUser();
 
         Category category = categoryRepository.findById(request.categoryId())
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -46,6 +63,7 @@ public class TaskService {
                 .category(category)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
+                .user(user)
                 .build();
 
         Task savedTask = taskRepository.save(task);
@@ -55,7 +73,9 @@ public class TaskService {
 
     public List<TaskResponse> getAllTasks() {
 
-        return taskRepository.findAll()
+        User user = getAuthenticatedUser();
+
+        return taskRepository.findByUserEmail(user.getEmail())
                 .stream()
                 .map(TaskMapper::toResponse)
                 .toList();
@@ -63,7 +83,10 @@ public class TaskService {
 
     public List<TaskResponse> getCompletedTasks() {
 
-        return taskRepository.findByCompletedTrue()
+        User user = getAuthenticatedUser();
+
+        return taskRepository
+                .findByUserEmailAndCompletedTrue(user.getEmail())
                 .stream()
                 .map(TaskMapper::toResponse)
                 .toList();
@@ -71,23 +94,42 @@ public class TaskService {
 
     public List<TaskResponse> getPendingTasks() {
 
-        return taskRepository.findByCompletedFalse()
+        User user = getAuthenticatedUser();
+
+        return taskRepository
+                .findByUserEmailAndCompletedFalse(user.getEmail())
                 .stream()
                 .map(TaskMapper::toResponse)
                 .toList();
     }
 
-    public List<TaskResponse> getTasksByPriority(TaskPriority priority) {
+    public List<TaskResponse> getTasksByPriority(
+            TaskPriority priority
+    ) {
 
-        return taskRepository.findByPriority(priority)
+        User user = getAuthenticatedUser();
+
+        return taskRepository
+                .findByUserEmailAndPriority(
+                        user.getEmail(),
+                        priority
+                )
                 .stream()
                 .map(TaskMapper::toResponse)
                 .toList();
     }
 
-    public List<TaskResponse> getTasksByCategory(String categoryId) {
+    public List<TaskResponse> getTasksByCategory(
+            String categoryId
+    ) {
 
-        return taskRepository.findByCategoryId(categoryId)
+        User user = getAuthenticatedUser();
+
+        return taskRepository
+                .findByUserEmailAndCategoryId(
+                        user.getEmail(),
+                        categoryId
+                )
                 .stream()
                 .map(TaskMapper::toResponse)
                 .toList();
@@ -95,7 +137,13 @@ public class TaskService {
 
     public TaskResponse getTaskById(String id) {
 
-        Task task = taskRepository.findById(id)
+        User user = getAuthenticatedUser();
+
+        Task task = taskRepository
+                .findByIdAndUserEmail(
+                        id,
+                        user.getEmail()
+                )
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Task not found"
                 ));
@@ -108,7 +156,13 @@ public class TaskService {
             TaskRequest request
     ) {
 
-        Task task = taskRepository.findById(id)
+        User user = getAuthenticatedUser();
+
+        Task task = taskRepository
+                .findByIdAndUserEmail(
+                        id,
+                        user.getEmail()
+                )
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Task not found"
                 ));
@@ -134,7 +188,13 @@ public class TaskService {
 
     public TaskResponse toggleTaskCompletion(String id) {
 
-        Task task = taskRepository.findById(id)
+        User user = getAuthenticatedUser();
+
+        Task task = taskRepository
+                .findByIdAndUserEmail(
+                        id,
+                        user.getEmail()
+                )
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Task not found"
                 ));
@@ -150,7 +210,13 @@ public class TaskService {
 
     public void deleteTask(String id) {
 
-        Task task = taskRepository.findById(id)
+        User user = getAuthenticatedUser();
+
+        Task task = taskRepository
+                .findByIdAndUserEmail(
+                        id,
+                        user.getEmail()
+                )
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Task not found"
                 ));

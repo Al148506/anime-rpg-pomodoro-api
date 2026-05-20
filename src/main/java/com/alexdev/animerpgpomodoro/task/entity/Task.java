@@ -3,7 +3,7 @@ package com.alexdev.animerpgpomodoro.task.entity;
 import com.alexdev.animerpgpomodoro.category.entity.Category;
 import jakarta.persistence.*;
 import lombok.*;
-
+import com.alexdev.animerpgpomodoro.auth.entity.User;
 import java.time.LocalDateTime;
 
 @Entity
@@ -43,6 +43,10 @@ public class Task {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
