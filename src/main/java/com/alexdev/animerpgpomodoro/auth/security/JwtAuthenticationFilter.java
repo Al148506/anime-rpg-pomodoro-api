@@ -44,11 +44,18 @@ public class JwtAuthenticationFilter
 
         String jwtToken = authHeader.substring(7);
 
-        String email = jwtService.extractEmail(jwtToken);
+        String email;
+        try {
+            email = jwtService.extractEmail(jwtToken);
+        } catch (RuntimeException ex) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         if (email != null
                 && SecurityContextHolder.getContext()
-                .getAuthentication() == null) {
+                .getAuthentication() == null
+                && jwtService.isTokenValid(jwtToken, email)) {
 
             UsernamePasswordAuthenticationToken authToken =
                     new UsernamePasswordAuthenticationToken(
