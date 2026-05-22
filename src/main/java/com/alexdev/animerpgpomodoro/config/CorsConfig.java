@@ -18,7 +18,9 @@ public class CorsConfig {
                 registry.addMapping("/**")
                         .allowedOrigins(
                                 "http://localhost:5173",
-                                "https://tu-frontend.vercel.app"
+                                "https://tu-frontend.vercel.app",
+                                "https://anime-rpg-pomodoro-api-production.up.railway.app",
+                                "https://web.postman.co"
                         )
                         .allowedMethods("*")
                         .allowedHeaders("*");
