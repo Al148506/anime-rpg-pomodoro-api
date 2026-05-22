@@ -10,6 +10,7 @@ public class CorsConfig {
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {
+
         return new WebMvcConfigurer() {
 
             @Override
@@ -19,8 +20,7 @@ public class CorsConfig {
                         .allowedOrigins(
                                 "http://localhost:5173",
                                 "https://tu-frontend.vercel.app",
-                                "https://anime-rpg-pomodoro-api-production.up.railway.app",
-                                "https://web.postman.co"
+                                "https://anime-rpg-pomodoro-api-production.up.railway.app"
                         )
                         .allowedMethods("*")
                         .allowedHeaders("*");
