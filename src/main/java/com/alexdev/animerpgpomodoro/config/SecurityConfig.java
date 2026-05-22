@@ -30,7 +30,12 @@ public class SecurityConfig {
     ) throws Exception {
 
         http
+                .cors(cors -> {})
                 .csrf(csrf -> csrf.disable())
+
+                .httpBasic(httpBasic -> httpBasic.disable())
+
+                .formLogin(form -> form.disable())
 
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
@@ -48,10 +53,12 @@ public class SecurityConfig {
 
                         .anyRequest().authenticated()
                 )
+
                 .addFilterBefore(
-                jwtAuthenticationFilter,
-                UsernamePasswordAuthenticationFilter.class
-        );
+                        jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                );
+
         return http.build();
     }
 }
