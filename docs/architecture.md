@@ -47,7 +47,7 @@ Enums are used for finite domain vocabularies: `PomodoroType`, `PomodoroSessionS
 
 Critical write operations use `@Transactional` to keep session completion, XP updates, achievements, and unlocks consistent.
 
-Flyway owns the database migration baseline through `src/main/resources/db/migration/V1__create_core_and_rpg_modules.sql`. Hibernate `ddl-auto=update` remains enabled to preserve the current local development behavior already present in the project.
+Flyway owns the database migration baseline through `src/main/resources/db/migration/V1__init_schema.sql`. Hibernate `ddl-auto=update` remains enabled to preserve the current local development behavior already present in the project.
 
 ## Backend Flow
 
